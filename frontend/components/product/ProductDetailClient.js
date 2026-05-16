@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiHeart, FiShoppingBag, FiMinus, FiPlus, FiTruck, FiRefreshCw } from 'react-icons/fi'
-import { formatPrice, calculateDiscount } from '@/lib/utils'
+import { formatPrice, calculateDiscount, getImageUrl } from '@/lib/utils'
 import { useAuthStore, useWishlistStore, useCartStore } from '@/lib/store'
 import { wishlistAPI, cartAPI } from '@/lib/api'
 
@@ -110,7 +110,7 @@ export default function ProductDetailClient({ product }) {
           <div>
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
               <Image
-                src={product.images[selectedImage]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80'}
+                src={getImageUrl(product.images[selectedImage]?.url)}
                 alt={product.name}
                 fill
                 className="object-cover"
@@ -131,7 +131,7 @@ export default function ProductDetailClient({ product }) {
                   }`}
                 >
                   <Image
-                    src={image.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=80'}
+                    src={getImageUrl(image.url)}
                     alt={`${product.name} ${index + 1}`}
                     fill
                     className="object-cover"

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiHeart, FiShoppingBag, FiEye } from 'react-icons/fi'
-import { formatPrice, calculateDiscount } from '@/lib/utils'
+import { formatPrice, calculateDiscount, getImageUrl } from '@/lib/utils'
 import { useAuthStore, useWishlistStore, useCartStore } from '@/lib/store'
 import { wishlistAPI, cartAPI } from '@/lib/api'
 
@@ -73,7 +73,7 @@ export default function ProductCard({ product }) {
         {/* Image Container */}
         <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
           <Image
-            src={product.images?.[0]?.imageUrl || product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80'}
+            src={getImageUrl(product.images?.[0]?.imageUrl || product.images?.[0]?.url)}
             alt={product.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"

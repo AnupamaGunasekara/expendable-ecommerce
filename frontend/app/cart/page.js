@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { FiMinus, FiPlus, FiTrash2, FiShoppingBag } from 'react-icons/fi'
 import { useCartStore } from '@/lib/store'
 import { cartAPI, couponAPI } from '@/lib/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getImageUrl } from '@/lib/utils'
 
 export default function CartPage() {
   const { cart, setCart } = useCartStore()
@@ -115,7 +115,7 @@ export default function CartPage() {
               <div key={item.id} className="bg-white rounded-lg p-6 flex gap-6">
                 <div className="relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                   <Image
-                    src={item.product.images[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80'}
+                    src={getImageUrl(item.product.images[0]?.url)}
                     alt={item.product.name}
                     fill
                     className="object-cover"

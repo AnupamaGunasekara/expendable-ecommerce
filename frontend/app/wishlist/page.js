@@ -7,7 +7,7 @@ import { FiHeart, FiTrash2, FiShoppingBag } from 'react-icons/fi'
 import Image from 'next/image'
 import { useAuthStore, useWishlistStore } from '@/lib/store'
 import { wishlistAPI, cartAPI } from '@/lib/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getImageUrl } from '@/lib/utils'
 
 export default function WishlistPage() {
   const router = useRouter()
@@ -96,7 +96,7 @@ export default function WishlistPage() {
               <div key={item.id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <div className="relative aspect-square">
                   <Image
-                    src={item.product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80'}
+                    src={getImageUrl(item.product.images?.[0]?.url)}
                     alt={item.product.name}
                     fill
                     className="object-cover"

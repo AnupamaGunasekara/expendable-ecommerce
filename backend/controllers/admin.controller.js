@@ -317,7 +317,23 @@ const updateProduct = async (req, res) => {
       tags,
       metaTitle,
       metaDescription,
+      images,
+      variants,
     } = req.body;
+
+    // If images are provided, delete existing ones and create new ones
+    if (images !== undefined) {
+      await prisma.productImage.deleteMany({
+        where: { productId: parseInt(id) },
+      });
+    }
+
+    // If variants are provided, delete existing ones and create new ones
+    if (variants !== undefined) {
+      await prisma.productVariant.deleteMany({
+        where: { productId: parseInt(id) },
+      });
+    }
 
     const product = await prisma.product.update({
       where: { id: parseInt(id) },
@@ -341,6 +357,29 @@ const updateProduct = async (req, res) => {
         ...(tags && { tags: JSON.stringify(tags) }),
         ...(metaTitle !== undefined && { metaTitle }),
         ...(metaDescription !== undefined && { metaDescription }),
+        ...(images !== undefined && images.length > 0 && {
+          images: {
+            create: images.map((img, index) => ({
+              url: img.url,
+              altText: img.altText || name,
+              sortOrder: index + 1,
+              isPrimary: img.isPrimary || index === 0,
+            })),
+          },
+        }),
+        ...(variants !== undefined && variants.length > 0 && {
+          variants: {
+            create: variants.map((variant) => ({
+              size: variant.size,
+              color: variant.color,
+              colorHex: variant.colorHex,
+              sku: variant.sku,
+              stock: parseInt(variant.stock) || 0,
+              price: variant.price ? parseFloat(variant.price) : null,
+              isActive: variant.isActive !== false,
+            })),
+          },
+        }),
       },
       include: {
         images: true,

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { adminAPI } from '@/lib/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getImageUrl } from '@/lib/utils'
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from 'react-icons/fi'
 
 export default function AdminProductsPage() {
@@ -106,7 +106,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 bg-gray-100 rounded overflow-hidden">
                           <Image
-                            src={product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=80'}
+                            src={getImageUrl(product.images?.[0]?.url)}
                             alt={product.name}
                             fill
                             className="object-cover"
