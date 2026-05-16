@@ -115,10 +115,28 @@ export const cartAPI = {
 
 // Wishlist APIs
 export const wishlistAPI = {
-  get: () => api.get('/wishlist'),
+  getAll: () => api.get('/wishlist'),
   add: (productId) => api.post('/wishlist', { productId }),
   remove: (productId) => api.delete(`/wishlist/${productId}`),
   check: (productId) => api.get(`/wishlist/check/${productId}`),
+  
+  // Sync local wishlist to server after login
+  syncToServer: async (localWishlist) => {
+    if (!localWishlist || localWishlist.length === 0) return;
+    try {
+      // Add each item from local storage to server
+      for (const item of localWishlist) {
+        try {
+          await api.post('/wishlist', { productId: item.productId });
+        } catch (error) {
+          // Item might already exist, ignore error
+          console.log('Item already in wishlist:', item.productId);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to sync wishlist:', error);
+    }
+  },
 };
 
 // Order APIs

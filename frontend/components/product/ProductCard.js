@@ -19,23 +19,41 @@ export default function ProductCard({ product }) {
 
   const handleWishlistToggle = async (e) => {
     e.preventDefault()
-    if (!isAuthenticated) {
-      window.location.href = '/login'
-      return
-    }
-
+    
     setLoading(true)
     try {
-      if (isWishlisted) {
-        await wishlistAPI.remove(product.id)
-        removeFromWishlist(product.id)
+      if (isAuthenticated) {
+        // For logged-in users, use API
+        if (isWishlisted) {
+          await wishlistAPI.remove(product.id)
+          removeFromWishlist(product.id)
+        } else {
+          await wishlistAPI.add(product.id)
+          addToWishlist({ productId: product.id, product })
+        }
       } else {
-        await wishlistAPI.add(product.id)
-        addToWishlist({ productId: product.id, product })
+        // For non-logged-in users, use localStorage only
+        if (isWishlisted) {
+          removeFromWishlist(product.id)
+        } else {
+          addToWishlist({ productId: product.id, product })
+        }
       }
       setIsWishlisted(!isWishlisted)
     } catch (error) {
       console.error('Wishlist error:', error)
+      const errorMsg = error.response?.data?.error || 'Failed to update wishlist'
+      
+      // If user authentication error, redirect to login
+      if (error.response?.status === 401) {
+        if (confirm('Your session has expired. Please log in again.')) {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+        }
+      } else {
+        alert(errorMsg)
+      }
     } finally {
       setLoading(false)
     }

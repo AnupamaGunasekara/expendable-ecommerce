@@ -47,19 +47,81 @@ export const useCartStore = create((set, get) => ({
   toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
 }));
 
-// Wishlist Store
+// Wishlist Store with localStorage support for non-logged-in users
 export const useWishlistStore = create((set, get) => ({
   items: [],
-  setItems: (items) => set({ items: items || [] }),
-  addItem: (product) => set((state) => ({
-    items: [...state.items, product],
-  })),
-  removeItem: (productId) => set((state) => ({
-    items: state.items.filter((item) => item.productId !== productId),
-  })),
+  
+  // Initialize wishlist from localStorage
+  init: () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('wishlist');
+      if (stored) {
+        try {
+          const items = JSON.parse(stored);
+          set({ items });
+        } catch (e) {
+          console.error('Failed to parse wishlist from localStorage');
+        }
+      }
+    }
+  },
+  
+  // Save to localStorage
+  saveToStorage: (items) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('wishlist', JSON.stringify(items));
+    }
+  },
+  
+  setItems: (items) => {
+    const itemsArray = items || [];
+    set({ items: itemsArray });
+    get().saveToStorage(itemsArray);
+  },
+  
+  addItem: (product) => {
+    const state = get();
+    const exists = state.items.some(item => item.productId === product.productId);
+    if (!exists) {
+      const newItems = [...state.items, product];
+      set({ items: newItems });
+      state.saveToStorage(newItems);
+    }
+  },
+  
+  removeItem: (productId) => {
+    const state = get();
+    const newItems = state.items.filter((item) => item.productId !== productId);
+    set({ items: newItems });
+    state.saveToStorage(newItems);
+  },
+  
   isInWishlist: (productId) => {
     const state = get();
     return state.items?.some((item) => item.productId === productId) || false;
+  },
+  
+  // Clear wishlist
+  clear: () => {
+    set({ items: [] });
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('wishlist');
+    }
+  },
+  
+  // Get wishlist from localStorage
+  getLocalWishlist: () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('wishlist');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          return [];
+        }
+      }
+    }
+    return [];
   },
 }));
 

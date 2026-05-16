@@ -40,6 +40,15 @@ const addToWishlist = async (req, res) => {
     const { productId } = req.body;
     const userId = req.user.id;
 
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found. Please log in again.' });
+    }
+
     // Check if product exists
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -74,6 +83,9 @@ const addToWishlist = async (req, res) => {
     res.json({ message: 'Product added to wishlist' });
   } catch (error) {
     console.error('Add to wishlist error:', error);
+    if (error.code === 'P2003') {
+      return res.status(401).json({ error: 'Invalid user. Please log in again.' });
+    }
     res.status(500).json({ error: 'Failed to add to wishlist' });
   }
 };
