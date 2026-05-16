@@ -33,11 +33,26 @@ export default function ShopPage({ params }) {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const response = await productAPI.getAll({
+      const params = {
         ...filters,
-        category: category !== 'all' ? category : filters.category,
         limit: 12,
-      })
+      }
+
+      // Handle special categories
+      if (category === 'new') {
+        params.isNew = 'true'
+        delete params.category  // Remove category filter for special pages
+      } else if (category === 'sale') {
+        params.onSale = 'true'
+        delete params.category  // Remove category filter for special pages
+      } else if (category !== 'all') {
+        params.category = category
+      } else if (filters.category) {
+        params.category = filters.category
+      }
+
+      console.log('Fetching products with params:', params)
+      const response = await productAPI.getAll(params)
       console.log('Shop products response:', response.data)
       setProducts(response.data.products || [])
       setTotalPages(response.data.pagination?.totalPages || 1)
@@ -62,7 +77,13 @@ export default function ShopPage({ params }) {
       <div className="bg-white border-b">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl font-bold mb-2 capitalize">
-            {category === 'all' ? 'All Products' : category}
+            {category === 'all' 
+              ? 'All Products' 
+              : category === 'new' 
+              ? 'New Collection' 
+              : category === 'sale' 
+              ? 'Sale' 
+              : category}
           </h1>
           <p className="text-gray-600">
             {loading ? 'Loading...' : `${products.length} products`}

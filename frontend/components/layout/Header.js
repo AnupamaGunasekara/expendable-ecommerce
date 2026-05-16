@@ -83,8 +83,12 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-black ${
-                    pathname === link.href ? 'text-black' : 'text-gray-600'
+                  className={`text-sm font-medium transition-colors ${
+                    link.name === 'Sale' 
+                      ? 'text-red-600 hover:text-red-700 font-bold' 
+                      : pathname === link.href 
+                      ? 'text-black' 
+                      : 'text-gray-600 hover:text-black'
                   }`}
                 >
                   {link.name}
@@ -146,7 +150,9 @@ export default function Header() {
                   href={link.href}
                   onClick={closeMobileMenu}
                   className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
-                    pathname === link.href
+                    link.name === 'Sale'
+                      ? 'text-red-600 hover:bg-red-50 font-bold'
+                      : pathname === link.href
                       ? 'bg-black text-white'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
