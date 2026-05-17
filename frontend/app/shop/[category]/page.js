@@ -34,22 +34,68 @@ export default function ShopPage({ params }) {
     setLoading(true)
     try {
       const params = {
-        ...filters,
         limit: 12,
+        page: filters.page,
       }
 
       // Handle special categories
       if (category === 'new') {
         params.isNew = 'true'
-        delete params.category  // Remove category filter for special pages
       } else if (category === 'sale') {
         params.onSale = 'true'
-        delete params.category  // Remove category filter for special pages
       } else if (category !== 'all') {
-        params.category = category
+        params.gender = category
       } else if (filters.category) {
-        params.category = filters.category
+        params.gender = filters.category
       }
+
+      // Add price filters
+      if (filters.minPrice) params.minPrice = filters.minPrice
+      if (filters.maxPrice) params.maxPrice = filters.maxPrice
+
+      // Add size filter - join array to comma-separated string
+      if (filters.sizes && filters.sizes.length > 0) {
+        params.size = filters.sizes.join(',')
+      }
+
+      // Add color filter - join array to comma-separated string
+      if (filters.colors && filters.colors.length > 0) {
+        params.color = filters.colors.join(',')
+      }
+
+      // Handle sorting
+      let sortField = 'createdAt'
+      let sortOrder = 'desc'
+
+      switch (filters.sortBy) {
+        case 'featured':
+          sortField = 'isFeatured'
+          sortOrder = 'desc'
+          break
+        case 'newest':
+          sortField = 'createdAt'
+          sortOrder = 'desc'
+          break
+        case 'price-asc':
+          sortField = 'price'
+          sortOrder = 'asc'
+          break
+        case 'price-desc':
+          sortField = 'price'
+          sortOrder = 'desc'
+          break
+        case 'name-asc':
+          sortField = 'name'
+          sortOrder = 'asc'
+          break
+        case 'name-desc':
+          sortField = 'name'
+          sortOrder = 'desc'
+          break
+      }
+
+      params.sort = sortField
+      params.order = sortOrder
 
       console.log('Fetching products with params:', params)
       const response = await productAPI.getAll(params)
