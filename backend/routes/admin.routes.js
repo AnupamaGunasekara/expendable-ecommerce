@@ -15,7 +15,10 @@ const {
   getAllCoupons,
   createCoupon,
   updateCoupon,
+  getAllSettings,
+  createSetting,
   updateSetting,
+  deleteSetting,
   getAllCategoriesAdmin,
 } = require('../controllers/admin.controller');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth.middleware');
@@ -51,7 +54,10 @@ router.post('/coupons', createCoupon);
 router.put('/coupons/:id', updateCoupon);
 
 // Settings
+router.get('/settings', getAllSettings);
+router.post('/settings', createSetting);
 router.put('/settings', updateSetting);
+router.delete('/settings/:id', deleteSetting);
 
 // Categories
 router.get('/categories', getAllCategoriesAdmin);

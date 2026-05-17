@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/lib/store'
 import { FiHome, FiPackage, FiShoppingBag, FiUsers, FiSettings, FiLogOut, FiMenu, FiBox } from 'react-icons/fi'
+import { Toaster } from 'react-hot-toast'
 
 export default function AdminLayout({ children }) {
   const router = useRouter()
@@ -45,6 +46,7 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Toaster position="top-right" />
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white">
         <div className="p-6">

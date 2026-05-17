@@ -361,11 +361,18 @@ model ContactMessage {
 }
 
 // Site Settings
+enum SettingType {
+  text
+  json
+  number
+  boolean
+}
+
 model SiteSetting {
-  id    Int    @id @default(autoincrement())
-  key   String @unique
-  value String @db.Text
-  type  String @default("text") // text, json, number, boolean
+  id    Int         @id @default(autoincrement())
+  key   String      @unique
+  value String      @db.Text
+  type  SettingType @default(text)
 
   @@map("site_settings")
 }
