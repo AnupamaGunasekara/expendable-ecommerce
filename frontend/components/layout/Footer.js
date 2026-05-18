@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa';
+import Image from 'next/image';
+import { FaFacebook, FaInstagram, FaYoutube } from 'react-icons/fa';
+import { FaTiktok, FaArrowRight } from 'react-icons/fa6';
 import { useState } from 'react';
 import { newsletterAPI } from '@/lib/api';
 
@@ -9,6 +11,7 @@ export default function Footer() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currency, setCurrency] = useState('LKR (₨)');
 
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
@@ -27,117 +30,141 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-white">
-      {/* Newsletter Section */}
-      <div className="border-b border-gray-800">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-2xl font-bold mb-2">SIGN UP FOR OUR NEWSLETTER</h3>
-            <p className="text-gray-400 mb-6">
-              Be the first to know about new drops, offers, and exclusive EXPENDABLES releases.
+    <footer className="bg-black text-white">
+      {/* Main Footer */}
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-16 xl:px-24 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+          {/* Logo & Social */}
+          <div>
+            <Link href="/" className="inline-block mb-6">
+              <div className="text-4xl font-light tracking-widest">EXPENDABLES</div>
+            </Link>
+            <div>
+              <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider">Follow Us</h4>
+              <div className="flex space-x-4">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors">
+                  <FaFacebook size={20} />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors">
+                  <FaInstagram size={20} />
+                </a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors">
+                  <FaYoutube size={20} />
+                </a>
+                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors">
+                  <FaTiktok size={20} />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Newsletter */}
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold mb-2 uppercase tracking-wider">Sign Up For The FOA Newsletter</h3>
+            <p className="text-sm text-gray-400 mb-6">
+              Be the first to know about our new collections and promotions
             </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-4 max-w-md mx-auto">
+            <form onSubmit={handleNewsletterSubmit} className="relative">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Email"
                 required
-                className="flex-1 px-4 py-3 bg-white text-black rounded-md focus:outline-none focus:ring-2 focus:ring-white"
+                className="w-full px-0 py-3 bg-transparent border-0 border-b border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-white transition-colors"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-white text-black font-medium rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                className="absolute right-0 bottom-3 text-white hover:text-gray-300 transition-colors disabled:opacity-50"
               >
-                {loading ? 'Subscribing...' : 'Subscribe'}
+                <FaArrowRight size={20} />
               </button>
             </form>
             {message && (
-              <p className={`mt-4 text-sm ${message.includes('Success') ? 'text-green-400' : 'text-red-400'}`}>
+              <p className={`mt-2 text-xs ${message.includes('Success') ? 'text-green-400' : 'text-red-400'}`}>
                 {message}
               </p>
             )}
-          </div>
-        </div>
-      </div>
 
-      {/* Main Footer */}
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* About */}
-          <div>
-            <h4 className="text-lg font-bold mb-4">EXPENDABLES</h4>
-            <p className="text-gray-400 text-sm mb-4">
-              Sri Lankan lifestyle fashion brand delivering premium T-shirts designed for everyday style and comfort.
-            </p>
-            <div className="flex space-x-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                <FaFacebook size={20} />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                <FaInstagram size={20} />
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                <FaYoutube size={20} />
-              </a>
-              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                <FaTiktok size={20} />
-              </a>
+            {/* Support & Info Columns */}
+            <div className="grid grid-cols-2 gap-8 mt-12">
+              {/* Support */}
+              <div>
+                <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider">Support</h4>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/terms" className="text-gray-300 hover:text-white transition-colors">Terms and Conditions</Link></li>
+                  <li><Link href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
+                  <li><Link href="/return-policy" className="text-gray-300 hover:text-white transition-colors">Return and Exchange Policy</Link></li>
+                  <li><Link href="/shipping-policy" className="text-gray-300 hover:text-white transition-colors">Shipping Policy</Link></li>
+                </ul>
+              </div>
+
+              {/* Info */}
+              <div>
+                <h4 className="text-sm font-semibold mb-4 uppercase tracking-wider">Info</h4>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/about" className="text-gray-300 hover:text-white transition-colors">Our Story</Link></li>
+                  <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact Us</Link></li>
+                </ul>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Shop */}
-          <div>
-            <h4 className="text-lg font-bold mb-4">Shop</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/shop/men" className="text-gray-400 hover:text-white transition-colors">Men T-Shirts</Link></li>
-              <li><Link href="/shop/women" className="text-gray-400 hover:text-white transition-colors">Women T-Shirts</Link></li>
-              <li><Link href="/shop/unisex" className="text-gray-400 hover:text-white transition-colors">Unisex T-Shirts</Link></li>
-              <li><Link href="/shop/new" className="text-gray-400 hover:text-white transition-colors">New Collection</Link></li>
-              <li><Link href="/shop/sale" className="text-gray-400 hover:text-white transition-colors">Sale</Link></li>
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h4 className="text-lg font-bold mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
-              <li><Link href="/shipping-policy" className="text-gray-400 hover:text-white transition-colors">Shipping Policy</Link></li>
-              <li><Link href="/return-policy" className="text-gray-400 hover:text-white transition-colors">Return & Exchange</Link></li>
-              <li><Link href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms & Conditions</Link></li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="text-lg font-bold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">Our Story</Link></li>
-              <li><Link href="/careers" className="text-gray-400 hover:text-white transition-colors">Careers</Link></li>
-              <li><Link href="/account" className="text-gray-400 hover:text-white transition-colors">My Account</Link></li>
-            </ul>
-            <div className="mt-6">
-              <p className="text-sm text-gray-400 mb-2">We Accept</p>
-              <div className="flex flex-wrap gap-2">
-                <div className="bg-white px-2 py-1 rounded text-xs text-black font-medium">VISA</div>
-                <div className="bg-white px-2 py-1 rounded text-xs text-black font-medium">MASTERCARD</div>
-                <div className="bg-white px-2 py-1 rounded text-xs text-black font-medium">AMEX</div>
-              </div>
+        {/* Payment Methods */}
+        <div className="mt-12 pt-8 border-t border-gray-800">
+          <div className="flex flex-wrap gap-3 justify-center items-center">
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="text-blue-600 font-bold text-xs">AMERICAN EXPRESS</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="text-black font-bold text-xs">Apple Pay</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="text-blue-700 font-bold text-xs">Diners Club</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="text-orange-600 font-bold text-xs">DISCOVER</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="font-bold text-xs">G Pay</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="text-red-600 font-bold text-xs">JCB</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="font-bold text-xs">Mastercard</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="text-blue-700 font-bold text-xs">Union Pay</span>
+            </div>
+            <div className="bg-white rounded px-3 py-2 h-10 flex items-center">
+              <span className="text-blue-900 font-bold text-xs">VISA</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gray-800">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-sm text-gray-400">
-            © 2026 EXPENDABLES. All Rights Reserved.
-          </p>
+      <div className="border-t border-gray-900">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-16 xl:px-24 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-4">
+              <select 
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="bg-transparent border border-gray-700 rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-white"
+              >
+                <option value="LKR (₨)" className="bg-black">LKR (₨)</option>
+                <option value="USD ($)" className="bg-black">USD ($)</option>
+                <option value="EUR (€)" className="bg-black">EUR (€)</option>
+              </select>
+            </div>
+            <p className="text-xs text-gray-400">
+              © 2026 EXPENDABLES Clothing. All rights reserved. <Link href="https://shopify.com" className="hover:text-white transition-colors">Powered by Shopify</Link>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

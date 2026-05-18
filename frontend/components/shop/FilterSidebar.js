@@ -13,8 +13,18 @@ const COLORS = [
   { name: 'Blue', hex: '#0000FF' },
 ]
 
-export default function FilterSidebar({ filters, onChange }) {
+const SORT_OPTIONS = [
+  { value: 'featured', label: 'Featured' },
+  { value: 'newest', label: 'Newest' },
+  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'name-asc', label: 'Name: A to Z' },
+  { value: 'name-desc', label: 'Name: Z to A' },
+]
+
+export default function FilterSidebar({ filters, onChange, showSort = false, isMobile = false }) {
   const [expandedSections, setExpandedSections] = useState({
+    sort: true,
     price: true,
     size: true,
     color: true,
@@ -45,6 +55,10 @@ export default function FilterSidebar({ filters, onChange }) {
     onChange({ colors })
   }
 
+  const handleSortChange = (sortBy) => {
+    onChange({ sortBy })
+  }
+
   const clearFilters = () => {
     onChange({
       minPrice: '',
@@ -55,16 +69,52 @@ export default function FilterSidebar({ filters, onChange }) {
   }
 
   return (
-    <div className="bg-white rounded-lg p-6 sticky top-20">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-lg">Filters</h3>
-        <button
-          onClick={clearFilters}
-          className="text-sm text-primary hover:underline"
-        >
-          Clear All
-        </button>
-      </div>
+    <div className={`bg-white ${isMobile ? '' : 'rounded-lg p-6 sticky top-20'}`}>
+      {!showSort && (
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-bold text-lg">Filters</h3>
+          <button
+            onClick={clearFilters}
+            className="text-sm hover:underline"
+          >
+            Clear All
+          </button>
+        </div>
+      )}
+
+      {/* Sort - Only show when showSort is true */}
+      {showSort && (
+        <div className="border-b pb-4 mb-6">
+          <button
+            onClick={() => toggleSection('sort')}
+            className="flex items-center justify-between w-full font-medium mb-3"
+          >
+            <span className="text-base">Sort By</span>
+            <FiChevronDown
+              className={`transform transition-transform ${
+                expandedSections.sort ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+          {expandedSections.sort && (
+            <div className="space-y-2">
+              {SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleSortChange(option.value)}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors text-sm ${
+                    filters.sortBy === option.value
+                      ? 'bg-black text-white'
+                      : 'bg-gray-50 hover:bg-gray-100'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Price Range */}
       <div className="border-b pb-4 mb-4">

@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { FiSearch, FiUser, FiHeart, FiShoppingBag, FiMenu, FiX } from 'react-icons/fi';
 import { useCartStore, useAuthStore, useUIStore } from '@/lib/store';
 import { settingsAPI } from '@/lib/api';
+import { getImageUrl } from '@/lib/utils';
 
 export default function Header() {
   const pathname = usePathname();
@@ -14,6 +16,7 @@ export default function Header() {
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, toggleSearch } = useUIStore();
   const [announcements, setAnnouncements] = useState([]);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [logoImage, setLogoImage] = useState(null);
 
   useEffect(() => {
     // Fetch announcements
@@ -21,12 +24,24 @@ export default function Header() {
       .then(res => setAnnouncements(res.data.value || []))
       .catch(() => {});
 
+    // Fetch logo image
+    settingsAPI.getByKey('logo_image')
+      .then(res => {
+        if (res.data.value) {
+          setLogoImage(res.data.value);
+        }
+      })
+      .catch(() => {});
+
     // Handle scroll
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const navLinks = [
@@ -36,8 +51,6 @@ export default function Header() {
     { name: 'Unisex', href: '/shop/unisex' },
     { name: 'New Collection', href: '/shop/new' },
     { name: 'Sale', href: '/shop/sale' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
   ];
 
   return (
@@ -61,7 +74,7 @@ export default function Header() {
           isScrolled ? 'shadow-md' : ''
         }`}
       >
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-16 xl:px-24">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Mobile Menu Button */}
             <button
@@ -72,13 +85,8 @@ export default function Header() {
               {isMobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
 
-            {/* Logo */}
-            <Link href="/" className="text-2xl md:text-3xl font-bold tracking-wider">
-              EXPENDABLES
-            </Link>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
+            {/* Desktop Navigation - Left aligned */}
+            <nav className="hidden lg:flex items-center space-x-8 flex-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -96,8 +104,26 @@ export default function Header() {
               ))}
             </nav>
 
-            {/* Icons */}
-            <div className="flex items-center space-x-4">
+            {/* Logo - Centered */}
+            <Link href="/" className="flex items-center lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
+              {logoImage?.url ? (
+                <Image
+                  src={getImageUrl(logoImage.url)}
+                  alt={logoImage.alt || 'EXPENDABLES'}
+                  width={150}
+                  height={50}
+                  className="h-10 md:h-12 w-auto object-contain"
+                  priority
+                />
+              ) : (
+                <span className="text-2xl md:text-3xl font-bold tracking-wider">
+                 
+                </span>
+              )}
+            </Link>
+
+            {/* Icons - Right aligned */}
+            <div className="flex items-center space-x-4 lg:flex-1 lg:justify-end">
               <button
                 onClick={toggleSearch}
                 className="p-2 text-gray-700 hover:text-black transition-colors"
@@ -117,7 +143,7 @@ export default function Header() {
               {isAuthenticated && (
                 <Link
                   href="/wishlist"
-                  className="hidden sm:block p-2 text-gray-700 hover:text-black transition-colors"
+                  className="p-2 text-gray-700 hover:text-black transition-colors"
                   aria-label="Wishlist"
                 >
                   <FiHeart size={20} />

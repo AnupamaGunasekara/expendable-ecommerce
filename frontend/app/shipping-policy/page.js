@@ -1,10 +1,11 @@
+import PolicyLayout from '@/components/PolicyLayout';
+
 export default function ShippingPolicyPage() {
   return (
-    <div className="min-h-screen bg-white py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold mb-8">Shipping Policy</h1>
-        
-        <div className="prose max-w-none space-y-6">
+    <PolicyLayout>
+      <h1 className="text-4xl font-bold mb-8">Shipping Policy</h1>
+      
+      <div className="prose max-w-none space-y-6">
           <h2 className="text-2xl font-bold">Shipping Information</h2>
           <p>We deliver across Sri Lanka with reliable shipping partners.</p>
 
@@ -39,7 +40,6 @@ export default function ShippingPolicyPage() {
             <p>Contact our support team at <a href="mailto:support@expendables.lk" className="text-primary">support@expendables.lk</a></p>
           </div>
         </div>
-      </div>
-    </div>
+      </PolicyLayout>
   )
 }

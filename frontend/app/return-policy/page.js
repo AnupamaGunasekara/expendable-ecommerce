@@ -1,10 +1,11 @@
+import PolicyLayout from '@/components/PolicyLayout';
+
 export default function ReturnPolicyPage() {
   return (
-    <div className="min-h-screen bg-white py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold mb-8">Return & Exchange Policy</h1>
-        
-        <div className="prose max-w-none space-y-6">
+    <PolicyLayout>
+      <h1 className="text-4xl font-bold mb-8">Return & Exchange Policy</h1>
+      
+      <div className="prose max-w-none space-y-6">
           <h2 className="text-2xl font-bold">7-Day Return Policy</h2>
           <p>
             We want you to be completely satisfied with your purchase. If you're not happy with your 
@@ -49,7 +50,6 @@ export default function ReturnPolicyPage() {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+      </PolicyLayout>
   )
 }

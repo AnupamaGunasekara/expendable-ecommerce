@@ -80,6 +80,24 @@ button {
   }
 }
 
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -104,6 +122,14 @@ button {
 
 .animate-slide-out-right {
   animation: slideOutRight 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slide-out-left {
+  animation: slideOutLeft 0.3s ease-out;
 }
 
 .animate-fade-in {
@@ -200,4 +226,20 @@ button {
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+/* Slide Down Animation for Dropdown */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.2s ease-out;
 }
