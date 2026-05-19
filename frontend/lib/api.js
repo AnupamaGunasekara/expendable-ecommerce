@@ -147,6 +147,14 @@ export const orderAPI = {
   cancel: (id) => api.put(`/orders/${id}/cancel`),
 };
 
+// Payment APIs (PayHere)
+export const paymentAPI = {
+  // Step 1: after creating a card order, get the PayHere checkout params
+  initiate: (orderNumber) => api.post('/payments/initiate', { orderNumber }),
+  // Step 2: poll payment status after returning from PayHere
+  getStatus: (orderNumber) => api.get(`/payments/status/${orderNumber}`),
+};
+
 // Coupon APIs
 export const couponAPI = {
   validate: (data) => api.post('/coupons/validate', data),

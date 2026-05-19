@@ -214,10 +214,11 @@ const updateCartItem = async (req, res) => {
     }
 
     // Verify ownership
-    if (
-      (userId && cartItem.cart.userId !== userId) ||
-      (sessionId && cartItem.cart.sessionId !== sessionId)
-    ) {
+    const isOwner = userId
+      ? cartItem.cart.userId === userId
+      : cartItem.cart.sessionId === sessionId;
+
+    if (!isOwner) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -263,10 +264,11 @@ const removeFromCart = async (req, res) => {
     }
 
     // Verify ownership
-    if (
-      (userId && cartItem.cart.userId !== userId) ||
-      (sessionId && cartItem.cart.sessionId !== sessionId)
-    ) {
+    const isOwner = userId
+      ? cartItem.cart.userId === userId
+      : cartItem.cart.sessionId === sessionId;
+
+    if (!isOwner) {
       return res.status(403).json({ error: 'Access denied' });
     }
 

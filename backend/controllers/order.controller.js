@@ -144,26 +144,20 @@ const createOrder = async (req, res) => {
       },
     });
 
-    // Update stock
-    for (const item of items) {
-      await prisma.productVariant.update({
-        where: { id: item.variantId },
-        data: {
-          stock: {
-            decrement: item.quantity,
-          },
-        },
-      });
-    }
+    // For COD: decrement stock and clear cart immediately.
+    // For card: stock is decremented only after notify_url confirms payment.
+    if (paymentMethod === 'cod') {
+      for (const item of items) {
+        await prisma.productVariant.update({
+          where: { id: item.variantId },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
 
-    // Clear cart
-    const cart = await prisma.cart.findUnique({
-      where: { userId },
-    });
-    if (cart) {
-      await prisma.cartItem.deleteMany({
-        where: { cartId: cart.id },
-      });
+      const cart = await prisma.cart.findUnique({ where: { userId } });
+      if (cart) {
+        await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+      }
     }
 
     res.status(201).json({

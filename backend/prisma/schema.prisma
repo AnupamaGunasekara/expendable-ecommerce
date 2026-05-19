@@ -233,22 +233,28 @@ model OrderItem {
   @@map("order_items")
 }
 
+// paymentStatus values: pending | processing | paid | failed | cancelled | refunded
 model Payment {
-  id              Int      @id @default(autoincrement())
-  orderId         Int      @unique
-  amount          Decimal  @db.Decimal(10, 2)
-  paymentMethod   String
-  paymentStatus   String   @default("pending")
-  transactionId   String?
-  paymentGateway  String?
-  paymentDetails  String?  @db.Text // JSON string
-  paidAt          DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  Int       @id @default(autoincrement())
+  orderId             Int       @unique
+  amount              Decimal   @db.Decimal(10, 2)
+  paymentMethod       String
+  paymentStatus       String    @default("pending")
+  transactionId       String?   // PayHere payment_id
+  paymentGateway      String?   // "payhere" | "cod"
+  payhereOrderId      String?   @unique // The order_id we sent to PayHere (== orderNumber)
+  payhereStatusCode   String?   // "2"=success, "0"=pending, "-1"=cancelled, "-2"=failed, "-3"=chargedback
+  payhereStatusMessage String?  @db.Text
+  paymentDetails      String?   @db.Text // Full webhook payload as JSON
+  notifyReceivedAt    DateTime? // When notify_url was hit
+  paidAt              DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+  @@index([payhereOrderId])
   @@map("payments")
 }
 

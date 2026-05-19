@@ -72,7 +72,7 @@ export default function ProductCard({ product }) {
 
     setLoading(true)
     try {
-      await cartAPI.add(product.id, variant.id, 1)
+      await cartAPI.add({ productId: product.id, variantId: variant.id, quantity: 1 })
       openCart()
     } catch (error) {
       console.error('Add to cart error:', error)
