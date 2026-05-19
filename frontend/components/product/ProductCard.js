@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiHeart, FiShoppingBag, FiEye } from 'react-icons/fi'
-import { formatPrice, calculateDiscount } from '@/lib/utils'
+import { formatPrice, calculateDiscount, getImageUrl } from '@/lib/utils'
 import { useAuthStore, useWishlistStore, useCartStore } from '@/lib/store'
 import { wishlistAPI, cartAPI } from '@/lib/api'
 
@@ -19,23 +19,41 @@ export default function ProductCard({ product }) {
 
   const handleWishlistToggle = async (e) => {
     e.preventDefault()
-    if (!isAuthenticated) {
-      window.location.href = '/login'
-      return
-    }
-
+    
     setLoading(true)
     try {
-      if (isWishlisted) {
-        await wishlistAPI.remove(product.id)
-        removeFromWishlist(product.id)
+      if (isAuthenticated) {
+        // For logged-in users, use API
+        if (isWishlisted) {
+          await wishlistAPI.remove(product.id)
+          removeFromWishlist(product.id)
+        } else {
+          await wishlistAPI.add(product.id)
+          addToWishlist({ productId: product.id, product })
+        }
       } else {
-        await wishlistAPI.add(product.id)
-        addToWishlist({ productId: product.id, product })
+        // For non-logged-in users, use localStorage only
+        if (isWishlisted) {
+          removeFromWishlist(product.id)
+        } else {
+          addToWishlist({ productId: product.id, product })
+        }
       }
       setIsWishlisted(!isWishlisted)
     } catch (error) {
       console.error('Wishlist error:', error)
+      const errorMsg = error.response?.data?.error || 'Failed to update wishlist'
+      
+      // If user authentication error, redirect to login
+      if (error.response?.status === 401) {
+        if (confirm('Your session has expired. Please log in again.')) {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+        }
+      } else {
+        alert(errorMsg)
+      }
     } finally {
       setLoading(false)
     }
@@ -54,7 +72,7 @@ export default function ProductCard({ product }) {
 
     setLoading(true)
     try {
-      await cartAPI.add(product.id, variant.id, 1)
+      await cartAPI.add({ productId: product.id, variantId: variant.id, quantity: 1 })
       openCart()
     } catch (error) {
       console.error('Add to cart error:', error)
@@ -73,7 +91,7 @@ export default function ProductCard({ product }) {
         {/* Image Container */}
         <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
           <Image
-            src={product.images?.[0]?.imageUrl || product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80'}
+            src={getImageUrl(product.images?.[0]?.imageUrl || product.images?.[0]?.url)}
             alt={product.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"

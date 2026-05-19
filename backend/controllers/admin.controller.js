@@ -317,7 +317,23 @@ const updateProduct = async (req, res) => {
       tags,
       metaTitle,
       metaDescription,
+      images,
+      variants,
     } = req.body;
+
+    // If images are provided, delete existing ones and create new ones
+    if (images !== undefined) {
+      await prisma.productImage.deleteMany({
+        where: { productId: parseInt(id) },
+      });
+    }
+
+    // If variants are provided, delete existing ones and create new ones
+    if (variants !== undefined) {
+      await prisma.productVariant.deleteMany({
+        where: { productId: parseInt(id) },
+      });
+    }
 
     const product = await prisma.product.update({
       where: { id: parseInt(id) },
@@ -341,6 +357,29 @@ const updateProduct = async (req, res) => {
         ...(tags && { tags: JSON.stringify(tags) }),
         ...(metaTitle !== undefined && { metaTitle }),
         ...(metaDescription !== undefined && { metaDescription }),
+        ...(images !== undefined && images.length > 0 && {
+          images: {
+            create: images.map((img, index) => ({
+              url: img.url,
+              altText: img.altText || name,
+              sortOrder: index + 1,
+              isPrimary: img.isPrimary || index === 0,
+            })),
+          },
+        }),
+        ...(variants !== undefined && variants.length > 0 && {
+          variants: {
+            create: variants.map((variant) => ({
+              size: variant.size,
+              color: variant.color,
+              colorHex: variant.colorHex,
+              sku: variant.sku,
+              stock: parseInt(variant.stock) || 0,
+              price: variant.price ? parseFloat(variant.price) : null,
+              isActive: variant.isActive !== false,
+            })),
+          },
+        }),
       },
       include: {
         images: true,
@@ -590,10 +629,116 @@ const updateCoupon = async (req, res) => {
   }
 };
 
-// Update site settings
+// Get all site settings (admin)
+const getAllSettings = async (req, res) => {
+  try {
+    console.log('Fetching all settings...');
+    
+    // Check if siteSetting model exists
+    if (!prisma.siteSetting) {
+      console.error('SiteSetting model not found in Prisma client');
+      return res.status(500).json({ error: 'SiteSetting model not available' });
+    }
+    
+    const settings = await prisma.siteSetting.findMany({
+      orderBy: { id: 'asc' },
+    });
+
+    console.log('Settings fetched:', settings.length);
+
+    // Convert values based on type
+    const formattedSettings = settings.map(setting => {
+      let parsedValue = setting.value;
+      
+      try {
+        if (setting.type === 'json') {
+          parsedValue = JSON.parse(setting.value);
+        } else if (setting.type === 'number') {
+          parsedValue = Number(setting.value);
+        } else if (setting.type === 'boolean') {
+          parsedValue = setting.value === 'true';
+        }
+      } catch (e) {
+        console.error(`Error parsing value for ${setting.key}:`, e);
+      }
+
+      return {
+        id: setting.id,
+        key: setting.key,
+        value: parsedValue,
+        type: setting.type,
+      };
+    });
+
+    res.json(formattedSettings);
+  } catch (error) {
+    console.error('Get all settings error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Failed to fetch settings', details: error.message });
+  }
+};
+
+// Create new site setting
+const createSetting = async (req, res) => {
+  try {
+    const { key, value, type = 'text' } = req.body;
+
+    if (!key) {
+      return res.status(400).json({ error: 'Key is required' });
+    }
+
+    // Validate type
+    const validTypes = ['text', 'json', 'number', 'boolean'];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ error: 'Invalid type. Must be text, json, number, or boolean' });
+    }
+
+    // Convert value based on type
+    let stringValue = value;
+    if (type === 'json') {
+      try {
+        // Validate JSON if string, or stringify if object
+        const jsonValue = typeof value === 'string' ? JSON.parse(value) : value;
+        stringValue = JSON.stringify(jsonValue);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid JSON value' });
+      }
+    } else if (type === 'number') {
+      const numValue = Number(value);
+      if (isNaN(numValue)) {
+        return res.status(400).json({ error: 'Invalid number value' });
+      }
+      stringValue = String(numValue);
+    } else if (type === 'boolean') {
+      stringValue = String(value === 'true' || value === true);
+    } else {
+      stringValue = String(value);
+    }
+
+    const setting = await prisma.siteSetting.upsert({
+      where: { key },
+      update: { value: stringValue, type },
+      create: { key, value: stringValue, type },
+    });
+
+    res.json({
+      message: 'Setting created successfully',
+      setting,
+    });
+  } catch (error) {
+    console.error('Create setting error:', error);
+    res.status(500).json({ error: 'Failed to create setting' });
+  }
+};
+
+// Create or update site setting
 const updateSetting = async (req, res) => {
   try {
     const { key, value, type = 'text' } = req.body;
+
+    if (!key) {
+      return res.status(400).json({ error: 'Key is required' });
+    }
 
     let stringValue = value;
     if (type === 'json') {
@@ -615,6 +760,22 @@ const updateSetting = async (req, res) => {
   } catch (error) {
     console.error('Update setting error:', error);
     res.status(500).json({ error: 'Failed to update setting' });
+  }
+};
+
+// Delete site setting
+const deleteSetting = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.siteSetting.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.json({ message: 'Setting deleted successfully' });
+  } catch (error) {
+    console.error('Delete setting error:', error);
+    res.status(500).json({ error: 'Failed to delete setting' });
   }
 };
 
@@ -658,6 +819,9 @@ module.exports = {
   getAllCoupons,
   createCoupon,
   updateCoupon,
+  getAllSettings,
+  createSetting,
   updateSetting,
+  deleteSetting,
   getAllCategoriesAdmin,
 };

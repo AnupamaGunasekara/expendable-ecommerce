@@ -6,7 +6,7 @@ import Link from 'next/link'
 import ProductGrid from '@/components/product/ProductGrid'
 import FilterSidebar from '@/components/shop/FilterSidebar'
 import { productAPI } from '@/lib/api'
-import { FiGrid, FiList } from 'react-icons/fi'
+import { FiGrid, FiList, FiX, FiSliders } from 'react-icons/fi'
 
 export default function ShopPage({ params }) {
   const router = useRouter()
@@ -15,6 +15,7 @@ export default function ShopPage({ params }) {
   
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [filters, setFilters] = useState({
     category: category !== 'all' ? category : '',
     minPrice: searchParams.get('minPrice') || '',
@@ -33,11 +34,72 @@ export default function ShopPage({ params }) {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const response = await productAPI.getAll({
-        ...filters,
-        category: category !== 'all' ? category : filters.category,
+      const params = {
         limit: 12,
-      })
+        page: filters.page,
+      }
+
+      // Handle special categories
+      if (category === 'new') {
+        params.isNew = 'true'
+      } else if (category === 'sale') {
+        params.onSale = 'true'
+      } else if (category !== 'all') {
+        params.gender = category
+      } else if (filters.category) {
+        params.gender = filters.category
+      }
+
+      // Add price filters
+      if (filters.minPrice) params.minPrice = filters.minPrice
+      if (filters.maxPrice) params.maxPrice = filters.maxPrice
+
+      // Add size filter - join array to comma-separated string
+      if (filters.sizes && filters.sizes.length > 0) {
+        params.size = filters.sizes.join(',')
+      }
+
+      // Add color filter - join array to comma-separated string
+      if (filters.colors && filters.colors.length > 0) {
+        params.color = filters.colors.join(',')
+      }
+
+      // Handle sorting
+      let sortField = 'createdAt'
+      let sortOrder = 'desc'
+
+      switch (filters.sortBy) {
+        case 'featured':
+          sortField = 'isFeatured'
+          sortOrder = 'desc'
+          break
+        case 'newest':
+          sortField = 'createdAt'
+          sortOrder = 'desc'
+          break
+        case 'price-asc':
+          sortField = 'price'
+          sortOrder = 'asc'
+          break
+        case 'price-desc':
+          sortField = 'price'
+          sortOrder = 'desc'
+          break
+        case 'name-asc':
+          sortField = 'name'
+          sortOrder = 'asc'
+          break
+        case 'name-desc':
+          sortField = 'name'
+          sortOrder = 'desc'
+          break
+      }
+
+      params.sort = sortField
+      params.order = sortOrder
+
+      console.log('Fetching products with params:', params)
+      const response = await productAPI.getAll(params)
       console.log('Shop products response:', response.data)
       setProducts(response.data.products || [])
       setTotalPages(response.data.pagination?.totalPages || 1)
@@ -62,7 +124,13 @@ export default function ShopPage({ params }) {
       <div className="bg-white border-b">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl font-bold mb-2 capitalize">
-            {category === 'all' ? 'All Products' : category}
+            {category === 'all' 
+              ? 'All Products' 
+              : category === 'new' 
+              ? 'New Collection' 
+              : category === 'sale' 
+              ? 'Sale' 
+              : category}
           </h1>
           <p className="text-gray-600">
             {loading ? 'Loading...' : `${products.length} products`}
@@ -72,10 +140,63 @@ export default function ShopPage({ params }) {
 
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="lg:w-64 flex-shrink-0">
+          {/* Desktop Filters Sidebar */}
+          <aside className="hidden lg:block lg:w-64 flex-shrink-0">
             <FilterSidebar filters={filters} onChange={handleFilterChange} />
           </aside>
+
+          {/* Mobile Filter Button */}
+          <div className="lg:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full shadow-lg hover:bg-gray-800 transition-colors"
+            >
+              <FiSliders size={20} />
+              <span className="font-medium">FILTER AND SORT</span>
+            </button>
+          </div>
+
+          {/* Mobile Filters Drawer */}
+          {showMobileFilters && (
+            <>
+              {/* Overlay */}
+              <div 
+                className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50"
+                onClick={() => setShowMobileFilters(false)}
+              />
+              
+              {/* Drawer */}
+              <div className="lg:hidden fixed inset-y-0 left-0 w-full max-w-sm bg-white z-50 flex flex-col animate-slide-in-left">
+                <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+                  <h2 className="text-lg font-bold">FILTER AND SORT</h2>
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <FiX size={24} />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 pb-8">
+                  <FilterSidebar 
+                    filters={filters} 
+                    onChange={(newFilters) => {
+                      handleFilterChange(newFilters);
+                    }}
+                    showSort={true}
+                    isMobile={true}
+                  />
+                </div>
+                <div className="flex-shrink-0 border-t border-gray-200 p-4 bg-white">
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Products Grid */}
           <div className="flex-1">

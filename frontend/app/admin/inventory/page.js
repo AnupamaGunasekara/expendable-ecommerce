@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { adminAPI } from '@/lib/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getImageUrl } from '@/lib/utils'
 import { FiPackage, FiAlertTriangle, FiSave, FiSearch } from 'react-icons/fi'
 
 export default function StockManagementPage() {
@@ -145,7 +145,7 @@ export default function StockManagementPage() {
                   <div className="flex items-center gap-4 mb-4">
                     <div className="relative w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                       <Image
-                        src={product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=80'}
+                        src={getImageUrl(product.images?.[0]?.url)}
                         alt={product.name}
                         fill
                         className="object-cover"

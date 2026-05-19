@@ -24,6 +24,9 @@ const getAllProducts = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const take = parseInt(limit);
 
+    // Debug logging
+    console.log('Product Query Params:', { isNew, onSale, isFeatured, category, gender, size, color, sort, order });
+
     // Build where clause
     const where = {
       isActive: true,
@@ -48,20 +51,38 @@ const getAllProducts = async (req, res) => {
       ...(onSale === 'true' && { onSale: true }),
     };
 
+    console.log('Built WHERE clause:', JSON.stringify(where, null, 2));
+
     // Filter by size or color if provided
     if (size || color) {
+      const sizes = size ? size.split(',').map(s => s.trim()) : []
+      const colors = color ? color.split(',').map(c => c.trim()) : []
+      
+      const variantConditions = []
+      
+      if (sizes.length > 0) {
+        variantConditions.push({ size: { in: sizes } })
+      }
+      
+      if (colors.length > 0) {
+        variantConditions.push({ color: { in: colors } })
+      }
+      
       where.variants = {
         some: {
-          ...(size && { size }),
-          ...(color && { color }),
-          stock: { gt: 0 },
-          isActive: true,
+          AND: [
+            ...variantConditions,
+            { stock: { gt: 0 } },
+            { isActive: true }
+          ]
         },
       };
     }
 
     // Get total count
     const total = await prisma.product.count({ where });
+    
+    console.log('Total products matching filter:', total);
 
     // Get products
     const products = await prisma.product.findMany({

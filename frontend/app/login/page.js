@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useAuthStore } from '@/lib/store'
-import { authAPI } from '@/lib/api'
+import { useAuthStore, useWishlistStore } from '@/lib/store'
+import { authAPI, wishlistAPI } from '@/lib/api'
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 
 export default function LoginPage() {
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
   const { login } = useAuthStore()
+  const { getLocalWishlist, setItems } = useWishlistStore()
   
   const [formData, setFormData] = useState({
     email: '',
@@ -37,6 +38,20 @@ export default function LoginPage() {
     try {
       const response = await authAPI.login({ email: formData.email, password: formData.password })
       login(response.data.user, response.data.token)
+      
+      // Sync local wishlist to server
+      const localWishlist = getLocalWishlist()
+      if (localWishlist && localWishlist.length > 0) {
+        await wishlistAPI.syncToServer(localWishlist)
+        // Fetch updated wishlist from server
+        try {
+          const wishlistResponse = await wishlistAPI.getAll()
+          setItems(wishlistResponse.data.wishlist || [])
+        } catch (err) {
+          console.error('Failed to fetch wishlist after login:', err)
+        }
+      }
+      
       router.push(redirect)
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.')

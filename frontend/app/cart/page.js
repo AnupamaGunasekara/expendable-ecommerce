@@ -6,10 +6,10 @@ import Image from 'next/image'
 import { FiMinus, FiPlus, FiTrash2, FiShoppingBag } from 'react-icons/fi'
 import { useCartStore } from '@/lib/store'
 import { cartAPI, couponAPI } from '@/lib/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getImageUrl } from '@/lib/utils'
 
 export default function CartPage() {
-  const { cart, setCart } = useCartStore()
+  const { cart, total: cartTotal, setCart } = useCartStore()
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState({})
   const [couponCode, setCouponCode] = useState('')
@@ -23,8 +23,8 @@ export default function CartPage() {
 
   const fetchCart = async () => {
     try {
-      const response = await cartAPI.getCart()
-      setCart(response.data)
+      const response = await cartAPI.get()
+      setCart(response.data.cart, response.data.total)
     } catch (error) {
       console.error('Error fetching cart:', error)
     } finally {
@@ -37,7 +37,7 @@ export default function CartPage() {
 
     setUpdating({ ...updating, [itemId]: true })
     try {
-      await cartAPI.updateItem(itemId, quantity)
+      await cartAPI.update(itemId, { quantity })
       await fetchCart()
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to update quantity')
@@ -51,10 +51,10 @@ export default function CartPage() {
 
     setUpdating({ ...updating, [itemId]: true })
     try {
-      await cartAPI.removeItem(itemId)
+      await cartAPI.remove(itemId)
       await fetchCart()
     } catch (error) {
-      alert('Failed to remove item')
+      alert(error.response?.data?.error || 'Failed to remove item')
     } finally {
       setUpdating({ ...updating, [itemId]: false })
     }
@@ -66,7 +66,7 @@ export default function CartPage() {
     setCouponLoading(true)
     setCouponError('')
     try {
-      const response = await couponAPI.validate(couponCode, cart.totalPrice)
+      const response = await couponAPI.validate(couponCode, cartTotal)
       setCouponDiscount(response.data.discount)
     } catch (error) {
       setCouponError(error.response?.data?.message || 'Invalid coupon code')
@@ -99,7 +99,7 @@ export default function CartPage() {
     )
   }
 
-  const subtotal = cart.totalPrice
+  const subtotal = cartTotal
   const shipping = subtotal >= 9999 ? 0 : 500
   const total = subtotal + shipping - couponDiscount
 
@@ -115,7 +115,7 @@ export default function CartPage() {
               <div key={item.id} className="bg-white rounded-lg p-6 flex gap-6">
                 <div className="relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                   <Image
-                    src={item.product.images[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80'}
+                    src={getImageUrl(item.product.images[0]?.url)}
                     alt={item.product.name}
                     fill
                     className="object-cover"
@@ -129,7 +129,7 @@ export default function CartPage() {
                     </h3>
                   </Link>
                   <p className="text-sm text-gray-600 mb-4">
-                    Size: {item.productVariant.size} | Color: {item.productVariant.color}
+                    Size: {item.variant.size} | Color: {item.variant.color}
                   </p>
 
                   <div className="flex items-center justify-between">
@@ -153,7 +153,7 @@ export default function CartPage() {
 
                     <div className="flex items-center gap-6">
                       <span className="font-semibold text-lg">
-                        {formatPrice(item.price * item.quantity)}
+                        {formatPrice(parseFloat(item.product.salePrice || item.product.price) * item.quantity)}
                       </span>
                       <button
                         onClick={() => removeItem(item.id)}

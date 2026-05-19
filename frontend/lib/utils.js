@@ -95,3 +95,32 @@ export const getProductBadge = (product) => {
   if (product.isBestSeller) return { text: 'Best Seller', color: 'bg-blue-500' };
   return null;
 };
+
+// Convert Google Drive share link to direct image URL
+export const convertGoogleDriveUrl = (url) => {
+  if (!url) return null;
+  
+  // Check if it's a Google Drive URL
+  if (url.includes('drive.google.com')) {
+    // Extract file ID from various Google Drive URL formats
+    const fileIdMatch = url.match(/\/d\/(.*?)(\/|$|\?)/);
+    if (fileIdMatch && fileIdMatch[1]) {
+      const fileId = fileIdMatch[1];
+      // Convert to direct image URL
+      return `https://lh3.googleusercontent.com/d/${fileId}`;
+    }
+  }
+  
+  // Return original URL if not a Google Drive URL
+  return url;
+};
+
+// Get image URL with fallback
+export const getImageUrl = (imageUrl, fallback = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80') => {
+  if (!imageUrl) return fallback;
+  
+  // Convert Google Drive URLs
+  const convertedUrl = convertGoogleDriveUrl(imageUrl);
+  
+  return convertedUrl || fallback;
+};

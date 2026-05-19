@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiHeart, FiShoppingBag, FiMinus, FiPlus, FiTruck, FiRefreshCw } from 'react-icons/fi'
-import { formatPrice, calculateDiscount } from '@/lib/utils'
+import { formatPrice, calculateDiscount, getImageUrl } from '@/lib/utils'
 import { useAuthStore, useWishlistStore, useCartStore } from '@/lib/store'
 import { wishlistAPI, cartAPI } from '@/lib/api'
 
@@ -56,7 +56,7 @@ export default function ProductDetailClient({ product }) {
 
     setLoading(true)
     try {
-      await cartAPI.add(product.id, selectedVariant.id, quantity)
+      await cartAPI.add({ productId: product.id, variantId: selectedVariant.id, quantity })
       openCart()
     } catch (error) {
       alert('Failed to add to cart')
@@ -66,23 +66,40 @@ export default function ProductDetailClient({ product }) {
   }
 
   const handleWishlistToggle = async () => {
-    if (!isAuthenticated) {
-      window.location.href = '/login'
-      return
-    }
-
     setLoading(true)
     try {
-      if (isWishlisted) {
-        await wishlistAPI.remove(product.id)
-        removeFromWishlist(product.id)
+      if (isAuthenticated) {
+        // For logged-in users, use API
+        if (isWishlisted) {
+          await wishlistAPI.remove(product.id)
+          removeFromWishlist(product.id)
+        } else {
+          await wishlistAPI.add(product.id)
+          addToWishlist({ productId: product.id, product })
+        }
       } else {
-        await wishlistAPI.add(product.id)
-        addToWishlist({ productId: product.id, product })
+        // For non-logged-in users, use localStorage only
+        if (isWishlisted) {
+          removeFromWishlist(product.id)
+        } else {
+          addToWishlist({ productId: product.id, product })
+        }
       }
       setIsWishlisted(!isWishlisted)
     } catch (error) {
       console.error('Wishlist error:', error)
+      const errorMsg = error.response?.data?.error || 'Failed to update wishlist'
+      
+      // If user authentication error, redirect to login
+      if (error.response?.status === 401) {
+        if (confirm('Your session has expired. Please log in again.')) {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+        }
+      } else {
+        alert(errorMsg)
+      }
     } finally {
       setLoading(false)
     }
@@ -110,7 +127,7 @@ export default function ProductDetailClient({ product }) {
           <div>
             <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
               <Image
-                src={product.images[selectedImage]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80'}
+                src={getImageUrl(product.images[selectedImage]?.url)}
                 alt={product.name}
                 fill
                 className="object-cover"
@@ -131,7 +148,7 @@ export default function ProductDetailClient({ product }) {
                   }`}
                 >
                   <Image
-                    src={image.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=80'}
+                    src={getImageUrl(image.url)}
                     alt={`${product.name} ${index + 1}`}
                     fill
                     className="object-cover"

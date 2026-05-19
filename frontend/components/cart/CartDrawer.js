@@ -80,7 +80,7 @@ export default function CartDrawer() {
           {!cart.items || cart.items.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 mb-4">Your cart is empty</p>
-              <Link href="/shop" onClick={closeCart} className="btn btn-primary">
+              <Link href="/shop/all" onClick={closeCart} className="btn btn-primary">
                 Start Shopping
               </Link>
             </div>

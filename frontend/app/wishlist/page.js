@@ -7,28 +7,32 @@ import { FiHeart, FiTrash2, FiShoppingBag } from 'react-icons/fi'
 import Image from 'next/image'
 import { useAuthStore, useWishlistStore } from '@/lib/store'
 import { wishlistAPI, cartAPI } from '@/lib/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getImageUrl } from '@/lib/utils'
 
 export default function WishlistPage() {
   const router = useRouter()
   const { isAuthenticated } = useAuthStore()
-  const { items, setItems } = useWishlistStore()
+  const { items, setItems, init } = useWishlistStore()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login?redirect=/wishlist')
-      return
-    }
     fetchWishlist()
   }, [isAuthenticated])
 
   const fetchWishlist = async () => {
     try {
-      const response = await wishlistAPI.getAll()
-      setItems(response.data.wishlist || [])
+      if (isAuthenticated) {
+        // Fetch from server for logged-in users
+        const response = await wishlistAPI.getAll()
+        setItems(response.data.wishlist || [])
+      } else {
+        // Load from localStorage for non-logged-in users
+        init()
+      }
     } catch (error) {
       console.error('Error fetching wishlist:', error)
+      // Fallback to localStorage if API fails
+      init()
     } finally {
       setLoading(false)
     }
@@ -36,7 +40,9 @@ export default function WishlistPage() {
 
   const handleRemove = async (productId) => {
     try {
-      await wishlistAPI.remove(productId)
+      if (isAuthenticated) {
+        await wishlistAPI.remove(productId)
+      }
       setItems(items.filter(item => item.productId !== productId))
     } catch (error) {
       alert('Failed to remove item')
@@ -56,7 +62,7 @@ export default function WishlistPage() {
     }
 
     try {
-      await cartAPI.add(product.id, variant.id, 1)
+      await cartAPI.add({ productId: product.id, variantId: variant.id, quantity: 1 })
       alert('Added to cart!')
     } catch (error) {
       alert('Failed to add to cart')
@@ -96,7 +102,7 @@ export default function WishlistPage() {
               <div key={item.id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <div className="relative aspect-square">
                   <Image
-                    src={item.product.images?.[0]?.url || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80'}
+                    src={getImageUrl(item.product.images?.[0]?.url)}
                     alt={item.product.name}
                     fill
                     className="object-cover"
