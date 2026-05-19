@@ -157,7 +157,7 @@ export const paymentAPI = {
 
 // Coupon APIs
 export const couponAPI = {
-  validate: (data) => api.post('/coupons/validate', data),
+  validate: (code, orderTotal) => api.post('/coupons/validate', { code, orderTotal }),
 };
 
 // Contact APIs

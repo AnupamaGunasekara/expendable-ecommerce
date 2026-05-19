@@ -18,7 +18,21 @@ const createOrder = async (req, res) => {
       couponCode,
       customerNotes,
     } = req.body;
-    const userId = req.user.id;
+    
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'User authentication required' });
+    }
+    
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     // Validate items
     if (!items || items.length === 0) {
@@ -110,7 +124,7 @@ const createOrder = async (req, res) => {
         total,
         couponCode: couponCode || null,
         paymentMethod,
-        paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending',
+        paymentStatus: 'pending',
         shippingAddress: JSON.stringify(shippingAddress),
         billingAddress: JSON.stringify(billingAddress || shippingAddress),
         customerNotes: customerNotes || null,
@@ -123,6 +137,7 @@ const createOrder = async (req, res) => {
             amount: total,
             paymentMethod,
             paymentStatus: 'pending',
+            paymentGateway: paymentMethod === 'cod' ? 'cod' : null,
           },
         },
       },
@@ -165,15 +180,23 @@ const createOrder = async (req, res) => {
       order,
     });
   } catch (error) {
-    console.error('Create order error:', error);
-    res.status(500).json({ error: 'Failed to create order' });
+    console.error('Create order error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to create order',
+      message: error.message 
+    });
   }
 };
 
 // Get user orders
 const getUserOrders = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'User authentication required' });
+    }
+    
     const { page = 1, limit = 10 } = req.query;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -221,7 +244,11 @@ const getUserOrders = async (req, res) => {
 const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'User authentication required' });
+    }
 
     const order = await prisma.order.findFirst({
       where: {
@@ -265,7 +292,11 @@ const getOrderById = async (req, res) => {
 const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'User authentication required' });
+    }
 
     const order = await prisma.order.findFirst({
       where: {

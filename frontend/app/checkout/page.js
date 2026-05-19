@@ -143,28 +143,24 @@ export default function CheckoutPage() {
         couponCode: couponCode || undefined,
       }
 
-      // ── Create the order ────────────────────────────────────────────────────
+      // Create the order
       const orderRes = await orderAPI.create(orderData)
       const { orderNumber } = orderRes.data.order
 
-      // ── COD: clear cart + go to success page immediately ───────────────────
+      // Cash on Delivery - complete immediately
       if (formData.paymentMethod === 'cod') {
         await cartAPI.clear()
         router.push(`/order-success?orderNumber=${orderNumber}`)
         return
       }
 
-      // ── Card: initiate PayHere, then redirect browser to PayHere ───────────
+      // Card Payment - redirect to PayHere gateway
       toast.loading('Redirecting to payment gateway…', { id: 'payhere-redirect' })
       const payRes = await paymentAPI.initiate(orderNumber)
       const { checkoutUrl, params } = payRes.data
 
-      // Clear cart before leaving — the notify_url will confirm stock/status
       await cartAPI.clear()
-
-      // This programmatic POST replaces the current page with PayHere's form
       redirectToPayHere(checkoutUrl, params)
-      // (execution stops here — browser navigates away)
     } catch (error) {
       toast.dismiss('payhere-redirect')
       toast.error(
