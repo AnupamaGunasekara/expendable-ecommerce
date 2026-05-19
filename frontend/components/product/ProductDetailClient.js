@@ -56,7 +56,7 @@ export default function ProductDetailClient({ product }) {
 
     setLoading(true)
     try {
-      await cartAPI.add(product.id, selectedVariant.id, quantity)
+      await cartAPI.add({ productId: product.id, variantId: selectedVariant.id, quantity })
       openCart()
     } catch (error) {
       alert('Failed to add to cart')

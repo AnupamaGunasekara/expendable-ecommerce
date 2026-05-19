@@ -62,7 +62,7 @@ export default function WishlistPage() {
     }
 
     try {
-      await cartAPI.add(product.id, variant.id, 1)
+      await cartAPI.add({ productId: product.id, variantId: variant.id, quantity: 1 })
       alert('Added to cart!')
     } catch (error) {
       alert('Failed to add to cart')

@@ -16,6 +16,7 @@ const contactRoutes = require('./routes/contact.routes');
 const newsletterRoutes = require('./routes/newsletter.routes');
 const adminRoutes = require('./routes/admin.routes');
 const settingsRoutes = require('./routes/settings.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5030;
@@ -52,6 +53,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // 404 Handler
 app.use((req, res) => {
@@ -90,6 +92,7 @@ app.listen(PORT, () => {
   console.log('  - /api/newsletter');
   console.log('  - /api/admin');
   console.log('  - /api/settings');
+  console.log('  - /api/payments');
   console.log('');
 });
 
